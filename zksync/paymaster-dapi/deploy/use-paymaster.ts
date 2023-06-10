@@ -136,4 +136,20 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     `Transaction fee paid in ERC20 was ${erc20Balance.sub(newErc20Balance)}`
   );
   console.log(`Message in contract now is: ${await greeter.greet()}`);
+
+  await (
+    await erc20
+      .connect(emptyWallet)
+      .transfer("0xB976387BA02d982d2698fbd8c95B3D5dcc111762", 1, {
+        // specify gas values
+        maxFeePerGas: gasPrice,
+        maxPriorityFeePerGas: 0,
+        gasLimit: gasLimit,
+        // paymaster info
+        customData: {
+          paymasterParams: paymasterParams,
+          gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
+        },
+      })
+  ).wait();
 }

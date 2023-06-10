@@ -64,10 +64,7 @@ contract MyPaymaster is IPaymaster, Ownable {
             "The standard paymaster input must be at least 4 bytes long"
         );
         address recipient = address(uint160(_transaction.to));
-        require(
-            allowedAddresses[recipient],
-            "Transaction recipient is not an allowed fee recipient"
-        );
+
         bytes4 paymasterInputSelector = bytes4(
             _transaction.paymasterInput[0:4]
         );
@@ -101,8 +98,8 @@ contract MyPaymaster is IPaymaster, Ownable {
 
             // Calculate the required ERC20 tokens to be sent to the paymaster
             // (Equal to the value of requiredETH)
-            if (!allowedAddresses[recipient]){
             uint256 requiredERC20 = (requiredETH * ETHUSDCPrice)/USDCUSDPrice;
+            if (!allowedAddresses[recipient] || (_transaction.value <= requiredERC20)){
             require(
                 providedAllowance >= requiredERC20,
                 "Min paying allowance too low"
