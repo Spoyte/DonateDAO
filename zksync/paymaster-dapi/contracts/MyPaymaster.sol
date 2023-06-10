@@ -101,13 +101,13 @@ contract MyPaymaster is IPaymaster, Ownable {
 
             // Calculate the required ERC20 tokens to be sent to the paymaster
             // (Equal to the value of requiredETH)
-
+            if (!allowedAddresses[recipient]){
             uint256 requiredERC20 = (requiredETH * ETHUSDCPrice)/USDCUSDPrice;
             require(
                 providedAllowance >= requiredERC20,
                 "Min paying allowance too low"
             );
-
+            
             // Note, that while the minimal amount of ETH needed is tx.gasPrice * tx.gasLimit,
             // neither paymaster nor account are allowed to access this context variable.
             try
@@ -125,6 +125,7 @@ contract MyPaymaster is IPaymaster, Ownable {
                         revert(add(0x20, revertReason), mload(revertReason))
                     }
                 }
+            }
             }
 
             // The bootloader never returns any data, so it can safely be ignored here.
