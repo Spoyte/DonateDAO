@@ -58,8 +58,9 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   const PaymasterContract = PaymasterFactory.attach(PAYMASTER_ADDRESS);
 
   // Estimate gas fee for the transaction
-  const gasLimit = await greeter.estimateGas.setGreeting(
-    "new updated greeting",
+  const gasLimit = await erc20.estimateGas.transfer(
+    "0xB976387BA02d982d2698fbd8c95B3D5dcc111762",
+    ethers.BigNumber.from("50000000000000000000"),
     {
       customData: {
         gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
@@ -100,34 +101,35 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // Calculating the USD fee:
   const usdFee = fee.mul(ETHUSD).div(USDCUSD);
   console.log(`Estimated USD FEE: ${usdFee}`);
+  const total = usdFee.add(500000000000000000000n);
 
-  console.log(`Current message is: ${await greeter.greet()}`);
+  // console.log(`Current message is: ${await greeter.greet()}`);
 
   // Encoding the "ApprovalBased" paymaster flow's input
   const paymasterParams = utils.getPaymasterParams(PAYMASTER_ADDRESS, {
     type: "ApprovalBased",
     token: TOKEN_ADDRESS,
     // set minimalAllowance to the estimated fee in erc20
-    minimalAllowance: ethers.BigNumber.from(usdFee),
+    minimalAllowance: ethers.BigNumber.from(total),
     // empty bytes as testnet paymaster does not use innerInput
     innerInput: new Uint8Array(),
   });
 
-  await (
-    await greeter
-      .connect(emptyWallet)
-      .setGreeting(`new greeting updated at ${new Date().toUTCString()}`, {
-        // specify gas values
-        maxFeePerGas: gasPrice,
-        maxPriorityFeePerGas: 0,
-        gasLimit: gasLimit,
-        // paymaster info
-        customData: {
-          paymasterParams: paymasterParams,
-          gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
-        },
-      })
-  ).wait();
+  // await (
+  //   await greeter
+  //     .connect(emptyWallet)
+  //     .setGreeting(`new greeting updated at ${new Date().toUTCString()}`, {
+  //       // specify gas values
+  //       maxFeePerGas: gasPrice,
+  //       maxPriorityFeePerGas: 0,
+  //       gasLimit: gasLimit,
+  //       // paymaster info
+  //       customData: {
+  //         paymasterParams: paymasterParams,
+  //         gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
+  //       },
+  //     })
+  // ).wait();
 
   const newErc20Balance = await emptyWallet.getBalance(TOKEN_ADDRESS);
 
@@ -135,12 +137,12 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   console.log(
     `Transaction fee paid in ERC20 was ${erc20Balance.sub(newErc20Balance)}`
   );
-  console.log(`Message in contract now is: ${await greeter.greet()}`);
+  //console.log(`Message in contract now is: ${await greeter.greet()}`);
 
   await (
     await erc20
       .connect(emptyWallet)
-      .transfer("0xB976387BA02d982d2698fbd8c95B3D5dcc111762", 500000000000000, {
+      .transfer("0xB976387BA02d982d2698fbd8c95B3D5dcc111762", ethers.BigNumber.from("50000000000000000000"), {
         // specify gas values
         maxFeePerGas: gasPrice,
         maxPriorityFeePerGas: 0,

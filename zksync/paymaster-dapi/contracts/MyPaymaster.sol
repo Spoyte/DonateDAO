@@ -76,6 +76,11 @@ contract MyPaymaster is IPaymaster, Ownable {
                 (address, uint256, bytes)
             );
 
+            // (address token_erc, uint256 amount_sent) = abi.decode(
+            //     _transaction.data[0:2],
+            //     (address, uint256)
+            // );
+
             // Verify if token is the correct one
             require(token == allowedToken, "Invalid token");
 
@@ -99,7 +104,7 @@ contract MyPaymaster is IPaymaster, Ownable {
             // Calculate the required ERC20 tokens to be sent to the paymaster
             // (Equal to the value of requiredETH)
             uint256 requiredERC20 = (requiredETH * ETHUSDCPrice)/USDCUSDPrice;
-            if (!allowedAddresses[recipient] || (_transaction.value <= requiredERC20)){
+            if (!allowedAddresses[recipient] /*|| (amount_sent <= requiredERC20)*/){
             require(
                 providedAllowance >= requiredERC20,
                 "Min paying allowance too low"
