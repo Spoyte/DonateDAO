@@ -8,7 +8,6 @@ require("dotenv").config();
 
 // Put the address of the deployed paymaster and the Greeter Contract in the .env file
 const PAYMASTER_ADDRESS = process.env.PAYMASTER_ADDRESS;
-const GREETER_CONTRACT_ADDRESS = process.env.GREETER_CONTRACT;
 const EMPTY_WALLET_ADDRESS = process.env.EMPTY_WALLET_ADDRESS;
 
 // Put the address of the ERC20 token in the .env file:
@@ -19,12 +18,6 @@ function getToken(hre: HardhatRuntimeEnvironment, wallet: Wallet) {
   return new ethers.Contract(TOKEN_ADDRESS, artifact.abi, wallet);
 }
 
-// Greeter contract
-function getGreeter(hre: HardhatRuntimeEnvironment, wallet: Wallet) {
-  const artifact = hre.artifacts.readArtifactSync("Greeter");
-  return new ethers.Contract(GREETER_CONTRACT_ADDRESS, artifact.abi, wallet);
-}
-
 // Wallet private key
 // ⚠️ Never commit private keys to file tracking history, or your account could be compromised.
 const EMPTY_WALLET_PRIVATE_KEY = process.env.EMPTY_WALLET_PRIVATE_KEY;
@@ -32,16 +25,6 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     const provider = new Provider("https://testnet.era.zksync.dev");
     const emptyWallet = new Wallet(EMPTY_WALLET_PRIVATE_KEY, provider);
 
-  // Obviously this step is not required, but it is here purely to demonstrate that indeed the wallet has no ether.
-  const ethBalance = await emptyWallet.getBalance();
-    if (!ethBalance.eq(0)) {
-      throw new Error("The wallet is not empty");
-    }
-
-  const erc20Balance = await emptyWallet.getBalance(TOKEN_ADDRESS);
-  console.log(`ERC20 balance of the user before tx: ${erc20Balance}`);
-
-  const greeter = getGreeter(hre, emptyWallet);
   const erc20 = getToken(hre, emptyWallet);
 
   const gasPrice = await provider.getGasPrice();
@@ -59,8 +42,8 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 
   // Estimate gas fee for the transaction
   const gasLimit = await erc20.estimateGas.transfer(
-    "0xB976387BA02d982d2698fbd8c95B3D5dcc111762",
-    ethers.BigNumber.from("50000000000000000000"),
+    EMPTY_WALLET_ADDRESS, //to replace with the adresse of the current erc20
+    ethers.BigNumber.from("50000000000000000000"), //value to send in usd 18 decimals
     {
       customData: {
         gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
@@ -103,7 +86,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   await (
     await erc20
       .connect(emptyWallet)
-      .transfer("0xB976387BA02d982d2698fbd8c95B3D5dcc111762", ethers.BigNumber.from("50000000000000000000"), {
+      .transfer(EMPTY_WALLET_ADDRESS, ethers.BigNumber.from("50000000000000000000"), {
         // specify gas values
         maxFeePerGas: gasPrice,
         maxPriorityFeePerGas: 0,
