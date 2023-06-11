@@ -9,6 +9,7 @@ require("dotenv").config();
 // Put the address of the deployed paymaster and the Greeter Contract in the .env file
 const PAYMASTER_ADDRESS = process.env.PAYMASTER_ADDRESS;
 const EMPTY_WALLET_ADDRESS = process.env.EMPTY_WALLET_ADDRESS;
+const VALUE_TO_SEND = process.env.VALUE_TO_SEND;
 
 // Put the address of the ERC20 token in the .env file:
 const TOKEN_ADDRESS = process.env.TOKEN_ADDRESS;
@@ -23,7 +24,8 @@ function getToken(hre: HardhatRuntimeEnvironment, wallet: Wallet) {
 const EMPTY_WALLET_PRIVATE_KEY = process.env.EMPTY_WALLET_PRIVATE_KEY;
 export default async function (hre: HardhatRuntimeEnvironment) {
     const provider = new Provider("https://testnet.era.zksync.dev");
-    const emptyWallet = new Wallet(EMPTY_WALLET_PRIVATE_KEY, provider);
+    const emptyWallet = new Wallet(EMPTY_WALLET_PRIVATE_KEY, provider);//not required, this is to create a wallet
+    //can replace emptyWallet by the metamask wallet
 
   const erc20 = getToken(hre, emptyWallet);
 
@@ -43,7 +45,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   // Estimate gas fee for the transaction
   const gasLimit = await erc20.estimateGas.transfer(
     EMPTY_WALLET_ADDRESS, //to replace with the adresse of the current erc20
-    ethers.BigNumber.from("50000000000000000000"), //value to send in usd 18 decimals
+    ethers.BigNumber.from(VALUE_TO_SEND), //value to send in usd 18 decimals
     {
       customData: {
         gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
@@ -86,7 +88,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   await (
     await erc20
       .connect(emptyWallet)
-      .transfer(EMPTY_WALLET_ADDRESS, ethers.BigNumber.from("50000000000000000000"), {
+      .transfer(EMPTY_WALLET_ADDRESS, ethers.BigNumber.from(VALUE_TO_SEND), {
         // specify gas values
         maxFeePerGas: gasPrice,
         maxPriorityFeePerGas: 0,
