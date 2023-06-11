@@ -9,6 +9,7 @@ require("dotenv").config();
 // Put the address of the deployed paymaster and the Greeter Contract in the .env file
 const PAYMASTER_ADDRESS = process.env.PAYMASTER_ADDRESS;
 const EMPTY_WALLET_ADDRESS = process.env.EMPTY_WALLET_ADDRESS;
+// value of usdc to send, 18 decimals
 const VALUE_TO_SEND = process.env.VALUE_TO_SEND;
 
 // Put the address of the ERC20 token in the .env file:
